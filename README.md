@@ -64,7 +64,4 @@ For fast evaluation by judges, we have built a **Quick Demo Login** system:
 - On the login screen, click the **Commuter** or **Admin** demo buttons to bypass Firebase authentication.
 - In Demo Mode, image uploads intelligently fall back to your device's local storage, ensuring offline capabilities work flawlessly during the pitch!
 
----
 
-## 🤝 Team
-Developed with ❤️ by **Sahana** for the 2026 Hackathon!
