@@ -6,6 +6,8 @@
 
 **LostLink** is an intelligent, modern, and cross-platform mobile application designed to revolutionize how we recover lost items in public transit systems (Metros, Trains, Buses). Built for our Hackathon, it bridges the gap between commuters who lose items and station officers who find them.
 
+### 📥 [Download Latest APK](https://github.com/sahanavs-2006/LostLink_App/raw/main/build/app/outputs/flutter-apk/app-release.apk)
+
 ---
 
 ## ✨ Key Features
