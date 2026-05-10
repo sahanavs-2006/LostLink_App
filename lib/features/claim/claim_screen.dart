@@ -4,6 +4,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/helpers.dart';
 import '../../services/claim_service.dart';
+import '../../services/item_service.dart';
+import 'knowledge_check_screen.dart';
 
 class ClaimScreen extends StatefulWidget {
   const ClaimScreen({super.key});
@@ -24,6 +26,7 @@ class _ClaimScreenState extends State<ClaimScreen> {
   @override
   Widget build(BuildContext context) {
     final claimService = context.watch<ClaimService>();
+    final itemService = context.watch<ItemService>();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Claim Verification')),
@@ -61,34 +64,79 @@ class _ClaimScreenState extends State<ClaimScreen> {
           if (_searched) ...[
             const SizedBox(height: 24),
             Builder(builder: (_) {
-              final claim = claimService.getByCode(_codeCtrl.text.trim());
-              if (claim == null) {
+              final code = _codeCtrl.text.trim();
+              final claim = claimService.getByCode(code);
+              
+              final matchedItems = itemService.items.where((i) => i.claimCode?.toUpperCase() == code.toUpperCase());
+              final matchedItem = matchedItems.isNotEmpty ? matchedItems.first : null;
+
+              if (claim == null && matchedItem == null) {
                 return Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(color: AppColors.error.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(16)),
                   child: const Row(children: [
                     Icon(Icons.error_outline, color: AppColors.error),
                     SizedBox(width: 12),
-                    Expanded(child: Text('No claim found with this code. Please check and try again.', style: TextStyle(color: AppColors.error))),
+                    Expanded(child: Text('No claim or matched item found with this code. Please check and try again.', style: TextStyle(color: AppColors.error))),
                   ]),
                 ).animate().fadeIn().shake();
               }
-              return Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.success.withValues(alpha: 0.3))),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Row(children: [
-                    const Icon(Icons.check_circle, color: AppColors.success),
-                    const SizedBox(width: 8),
-                    Text('Claim Found — ${claim.status.toUpperCase()}', style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.success)),
+
+              if (claim == null && matchedItem != null) {
+                return Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.success.withValues(alpha: 0.3))),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Row(children: [
+                      const Icon(Icons.check_circle, color: AppColors.success),
+                      const SizedBox(width: 8),
+                      Text('Item Matched — ${matchedItem.status.toUpperCase()}', style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.success)),
+                    ]),
+                    const SizedBox(height: 16),
+                    _infoRow('Item', matchedItem.title),
+                    _infoRow('Category', matchedItem.category),
+                    _infoRow('Status', matchedItem.status),
+                    if (matchedItem.matchedAt != null) _infoRow('Matched On', Helpers.formatDateTime(matchedItem.matchedAt!)),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => KnowledgeCheckScreen(matchedItem: matchedItem),
+                            ),
+                          );
+                        },
+                        child: const Text('Proceed to Knowledge Check'),
+                      )
+                    )
                   ]),
-                  const SizedBox(height: 16),
-                  _infoRow('Claim ID', Helpers.truncate(claim.id, 12)),
-                  _infoRow('Status', claim.status),
-                  _infoRow('Created', Helpers.formatDateTime(claim.createdAt)),
-                  if (claim.verifiedAt != null) _infoRow('Verified', Helpers.formatDateTime(claim.verifiedAt!)),
-                ]),
-              ).animate().fadeIn().slideY(begin: 0.1);
+                ).animate().fadeIn().slideY(begin: 0.1);
+              }
+
+
+              if (claim != null) {
+                return Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.success.withValues(alpha: 0.3))),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Row(children: [
+                      const Icon(Icons.check_circle, color: AppColors.success),
+                      const SizedBox(width: 8),
+                      Text('Claim Found — ${claim.status.toUpperCase()}', style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.success)),
+                    ]),
+                    const SizedBox(height: 16),
+                    _infoRow('Claim ID', Helpers.truncate(claim.id, 12)),
+                    _infoRow('Status', claim.status),
+                    _infoRow('Created', Helpers.formatDateTime(claim.createdAt)),
+                    if (claim.verifiedAt != null) _infoRow('Verified', Helpers.formatDateTime(claim.verifiedAt!)),
+                  ]),
+                ).animate().fadeIn().slideY(begin: 0.1);
+              }
+              
+              return const SizedBox.shrink();
             }),
           ],
 

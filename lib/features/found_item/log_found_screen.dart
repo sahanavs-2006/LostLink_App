@@ -141,7 +141,7 @@ class _LogFoundScreenState extends State<LogFoundScreen> {
                 ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.1),
                 const SizedBox(height: 24),
 
-                Text('Photo (Recommended)', style: Theme.of(context).textTheme.headlineMedium),
+                Text('Photo (Required) *', style: Theme.of(context).textTheme.headlineMedium),
                 const SizedBox(height: 16),
                 GestureDetector(
                   onTap: _pickImage,
@@ -216,6 +216,12 @@ class _LogFoundScreenState extends State<LogFoundScreen> {
 
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
+
+    if (_imageFile == null) {
+      Helpers.showSnackBar(context, 'Please add a photo of the item to continue.', isError: true);
+      return;
+    }
+
     final auth = context.read<AuthService>();
     final items = context.read<ItemService>();
     if (auth.currentUser == null) return;

@@ -151,13 +151,17 @@ class ItemService extends ChangeNotifier {
             status: 'matched',
             matchConfidence: confidence,
             claimCode: Helpers.generateClaimCode(),
+            matchedItemId: foundItem.id,
           );
           
           _items[i] = matchedItem;
           _db.collection('items').doc(matchedItem.id).update(matchedItem.toMap());
           
           // Also update the found item
-          final updatedFoundItem = foundItem.copyWith(status: 'matched');
+          final updatedFoundItem = foundItem.copyWith(
+            status: 'matched',
+            matchedItemId: item.id,
+          );
           _db.collection('items').doc(updatedFoundItem.id).update(updatedFoundItem.toMap());
         }
       }

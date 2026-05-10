@@ -8,6 +8,7 @@ import '../../services/claim_service.dart';
 import '../../widgets/common_widgets.dart';
 import '../../widgets/item_card.dart';
 import '../lost_item/item_detail_screen.dart';
+import 'admin_claims_screen.dart';
 
 import '../shared/qr_scanner_screen.dart';
 
@@ -97,24 +98,29 @@ class AdminDashboard extends StatelessWidget {
 
           // Pending claims banner
           if (pending > 0)
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: AppColors.accentGradient,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(children: [
-                const Icon(Icons.pending_actions, color: Colors.white, size: 28),
-                const SizedBox(width: 12),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('$pending Pending Claims', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
-                  Text('Require officer verification', style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.8))),
-                ])),
-                const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
-              ]),
-            ).animate().fadeIn(delay: 200.ms).slideX(begin: 0.1),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminClaimsScreen()));
+              },
+              child: Container(
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: AppColors.accentGradient,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(children: [
+                  const Icon(Icons.pending_actions, color: Colors.white, size: 28),
+                  const SizedBox(width: 12),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('$pending Pending Claims', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+                    Text('Require officer verification', style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.8))),
+                  ])),
+                  const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+                ]),
+              ).animate().fadeIn(delay: 200.ms).slideX(begin: 0.1),
+            ),
 
           const SizedBox(height: 16),
 

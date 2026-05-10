@@ -100,8 +100,6 @@ class _DashboardTab extends StatelessWidget {
                   _quickAction(context, Icons.add_location_alt_outlined, 'Log\nFound', AppColors.success, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LogFoundScreen()))),
                   const SizedBox(width: 12),
                   _quickAction(context, Icons.verified_outlined, 'Claim\nVerify', AppColors.warning, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClaimScreen()))),
-                  const SizedBox(width: 12),
-                  _quickAction(context, Icons.qr_code_scanner, 'Scan\nQR', AppColors.info, () => Helpers.showSnackBar(context, 'QR Scanner — coming soon!')),
                 ]),
               ]),
             ),
@@ -192,7 +190,9 @@ class _ExploreTabState extends State<_ExploreTab> with SingleTickerProviderState
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthService>();
     final items = context.watch<ItemService>();
+    final user = auth.currentUser;
 
     // Get unique stations and categories from current items
     final stations = ['All Stations', ...items.items.map((e) => e.stationName).where((e) => e != null && e.isNotEmpty).cast<String>().toSet().toList()];
@@ -200,6 +200,25 @@ class _ExploreTabState extends State<_ExploreTab> with SingleTickerProviderState
 
     // Filter items based on search, station, and category
     final allItems = items.items.where((i) {
+      // Hide matched/claimed items from public feed unless user is the reporter or the finder
+      if (i.status == 'matched' || i.status == 'claiming' || i.status == 'recovered' || i.status == 'returned') {
+        if (user == null) return false;
+        
+        bool isMyReport = i.reportedBy == user.id;
+        bool isMatchedToMe = false;
+        
+        if (i.matchedItemId != null) {
+          final matchedItemsList = items.items.where((other) => other.id == i.matchedItemId);
+          if (matchedItemsList.isNotEmpty && matchedItemsList.first.reportedBy == user.id) {
+            isMatchedToMe = true;
+          }
+        }
+        
+        if (!isMyReport && !isMatchedToMe) {
+          return false;
+        }
+      }
+
       final matchesSearch = _searchQuery.isEmpty || i.title.toLowerCase().contains(_searchQuery.toLowerCase()) || i.description.toLowerCase().contains(_searchQuery.toLowerCase());
       final matchesStation = _selectedStation == 'All Stations' || i.stationName == _selectedStation;
       final matchesCategory = _selectedCategory == 'All Categories' || i.category == _selectedCategory;
